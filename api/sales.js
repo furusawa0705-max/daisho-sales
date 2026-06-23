@@ -4,7 +4,9 @@ export default async function handler(request, response) {
   if (request.method !== 'POST') return response.status(405).json({error:'Method not allowed'});
   try {
     const upstream = await fetch(GAS_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(request.body), redirect:'follow'
+      method:'POST',
+      headers:{'Content-Type':'application/json','User-Agent':'Mozilla/5.0 (Daisho Sales App)','Accept':'application/json'},
+      body:JSON.stringify(request.body), redirect:'follow'
     });
     const data = await upstream.json();
     response.status(upstream.ok ? 200 : 502).json(data);
