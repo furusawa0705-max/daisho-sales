@@ -1,0 +1,6 @@
+# ローカル実行時の生成物
+__pycache__/
+*.log
+
+# Apps Scriptへ手貼りする生成ファイル（ソースから再生成可能）
+gas/Index-ready-to-paste.html

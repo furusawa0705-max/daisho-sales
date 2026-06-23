@@ -1,0 +1,16 @@
+{
+  "name": "大商 売上管理",
+  "short_name": "売上管理",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#153f68",
+  "theme_color": "#153f68",
+  "icons": [
+    {
+      "src": "app-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

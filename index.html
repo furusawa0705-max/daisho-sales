@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>大商 | 売上管理</title>
+  <meta name="theme-color" content="#153f68" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="apple-touch-icon" href="app-icon.png" />
+  <link rel="icon" type="image/png" href="app-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .toolbar-selects{display:flex;gap:8px}.toolbar-selects select{border:1px solid var(--line);background:#fff;border-radius:7px;padding:9px 12px;color:var(--ink)}.report-button{border:0;border-radius:7px;padding:9px 13px;background:#183f68;color:#fff;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+    .brand{font-weight:800;color:#fff;display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 1px 28px;padding:20px 9px 18px;line-height:1.15;text-align:center;border-radius:12px;background:linear-gradient(145deg,#21476d,#173552);box-shadow:inset 0 0 0 1px #ffffff16}
+    .brand img{width:148px;height:102px;object-fit:contain;background:#fff;border-radius:9px;padding:5px;box-shadow:0 5px 15px #081b2e70}
+    .brand-name{font-size:20px;letter-spacing:.16em;padding-left:.16em}.brand small{display:block;margin-top:5px;font-weight:600;font-size:10px;letter-spacing:.2em;color:#a8d9ff}
+    @media(max-width:950px){.brand{padding:10px 3px;margin:0 0 28px}.brand img{width:42px;height:42px;padding:2px}.brand-name{display:none}}@media(max-width:600px){.toolbar-selects{width:100%}.toolbar-selects select{flex:1}}
+    .modal{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:#10243ab8}.modal[hidden]{display:none}.modal-panel{width:min(460px,100%);padding:37px 34px 30px;border-radius:17px;background:#fff;text-align:center;box-shadow:0 22px 60px #06152570}.celebrate-mark{width:56px;height:56px;display:grid;place-items:center;margin:0 auto 17px;border-radius:50%;background:#e5f7ef;color:#139460;font-size:29px;font-weight:800}.modal-panel h2{margin:5px 0 11px;font-size:25px}.completion-message{margin:0 auto 23px;color:#52657a;font-size:14px;line-height:1.7}.completion-totals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:23px;text-align:left}.completion-totals div{padding:14px 12px;border-radius:8px;background:#f4f8fc}.completion-totals span{display:block;margin-bottom:6px;color:#718198;font-size:11px}.completion-totals strong{font-size:17px;color:#1d4874;letter-spacing:-.03em}.modal-panel .primary{width:100%;padding:12px}
+    .goal-message{margin:0 0 23px;padding:11px 13px;border-radius:8px;background:#edf6ff;color:#205b95;font-size:13px;line-height:1.65;font-weight:700}
+    #completion-modal.achieved .modal-panel{position:relative;overflow:hidden;color:#fff;background:linear-gradient(#082e4db8,#082e4db8),url('okinawa-resort.png') center/cover}.achieved .modal-panel h2,.achieved .completion-message{color:#fff}.achieved .goal-message{background:#ffffffd9;color:#075784}.achieved .completion-totals div{background:#ffffffdc}.achieved .celebrate-mark{background:#fff3c8;color:#d78a00}
+  </style>
+  <style>
+    .modal-panel{width:min(570px,100%);padding:46px 44px 38px}.report-modal{position:fixed;inset:0;z-index:20;background:#e8f0f6;display:flex;flex-direction:column}.report-modal[hidden]{display:none}.report-modal-header{height:64px;padding:10px 24px;background:#153d66;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:15px}.report-modal-header div{display:flex;gap:8px}.report-modal-header .secondary{border-color:#c2d2e0}.report-modal iframe{border:0;flex:1;width:100%;background:#fff}
+    .celebrate-mark{width:68px;height:68px;font-size:34px;margin-bottom:20px}
+    .modal-panel h2{font-size:32px;margin:6px 0 14px}
+    .completion-message{font-size:17px;margin-bottom:15px}
+    .goal-message{font-size:17px;padding:14px 16px;margin-bottom:27px}
+    .completion-totals{gap:13px;margin-bottom:28px}.completion-totals div{padding:17px 15px}.completion-totals span{font-size:13px}.completion-totals strong{font-size:23px}
+    #completion-modal.achieved .modal-panel{background:linear-gradient(#073f5a70,#073f5a70),url('okinawa-resort.png') center/cover}
+    @media(max-width:600px){.modal{padding:0}.modal-panel{width:100%;min-height:100dvh;border-radius:0;display:flex;flex-direction:column;justify-content:center;padding:36px 25px}.modal-panel h2{font-size:31px}.completion-message{font-size:17px}.goal-message{font-size:17px}.completion-totals{gap:12px}.completion-totals strong{font-size:20px}.modal-panel .primary{font-size:16px;padding:15px}.report-modal-header{height:auto;padding:9px 12px}.report-modal-header strong{font-size:12px}.report-modal-header button{padding:8px 9px;font-size:12px}}
+  </style>
+  <style>.report-save-status{align-self:center;color:#bfe9d8;font-size:12px;font-weight:700}.report-modal-header .primary:disabled{opacity:.65;cursor:wait}</style>
+  <style>#prime-other-wrap[hidden]{display:none!important}.master-form{display:flex;gap:8px;margin:18px 0}.master-form input{flex:1;border:1px solid #ccd6e2;border-radius:6px;padding:10px;font:inherit}.master-list{display:grid;gap:7px}.master-item{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;background:#f4f8fb;border-radius:6px;font-size:13px}</style>
+  <style>.splash{position:fixed;inset:0;z-index:100;background:linear-gradient(145deg,#102a45,#1d609c);display:grid;place-items:center;transition:opacity .45s ease,visibility .45s ease}.splash.done{opacity:0;visibility:hidden}.splash-content{display:grid;justify-items:center;color:#fff;text-align:center;animation:splash-in .7s ease both}.splash-content img{width:145px;height:104px;object-fit:contain;background:#fff;border-radius:12px;padding:6px;box-shadow:0 15px 35px #07172866}.splash-content strong{margin-top:18px;font-size:28px;letter-spacing:.28em;padding-left:.28em}.splash-content span{margin-top:6px;color:#bde5ff;font-size:11px;font-weight:700;letter-spacing:.18em}.splash-content i{width:92px;height:3px;margin-top:24px;border-radius:99px;background:#55c4ef;animation:splash-line 1.1s ease both}@keyframes splash-in{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}@keyframes splash-line{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}@media(prefers-reduced-motion:reduce){.splash,.splash-content,.splash-content i{animation:none;transition:none}}@media(max-width:600px){body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}.sidebar{position:fixed;z-index:20;inset:auto 0 0;width:100%;height:calc(70px + env(safe-area-inset-bottom));padding:6px 8px env(safe-area-inset-bottom);background:#fff;border-top:1px solid #dce6ef;box-shadow:0 -4px 14px #1234}.sidebar .brand,.sidebar-foot{display:none}.sidebar nav{display:flex;justify-content:space-around;height:70px}.sidebar .nav-item{flex:1;padding:6px 2px;color:#728096;text-align:center;font-size:10px}.sidebar .nav-item span{display:block;margin:0 0 2px;font-size:20px}.sidebar .nav-item.active{background:#eaf4ff;color:#1973c7}.sidebar .nav-item:nth-child(3){background:#1f6feb;color:#fff;border-radius:12px;margin:-18px 5px 6px;box-shadow:0 5px 13px #1f6feb55;font-size:10px}.sidebar .nav-item:nth-child(3) span{font-size:26px;margin-top:1px}main{margin-left:0}.topbar{padding:14px 18px;min-height:76px}.topbar h1{font-size:20px}.topbar .eyebrow{font-size:10px}.page{padding:18px 14px 25px}.header-actions{gap:8px}.header-actions .primary{padding:9px 11px}.kpis{gap:9px}.kpi{padding:14px}.dashboard-grid{gap:13px}.card{padding:15px}.chart-card{min-height:260px}.bar-chart{height:185px}.filters{padding:10px}.master-form{flex-direction:column}.master-form .primary{width:100%}}</style>
+  <style>@media(max-width:600px){body{overflow-x:hidden}.toolbar-selects{flex-wrap:wrap}.toolbar-selects select{flex:1 1 calc(50% - 4px);min-width:0}.toolbar-selects .report-button{flex:1 1 100%;width:100%}}</style>
+  <style>
+    /* iPhone操作用：文字とタップ領域を大きくし、情報を一列にまとめる。 */
+    @media(max-width:600px){
+      body{padding-bottom:calc(98px + env(safe-area-inset-bottom))}
+      .sidebar{height:calc(86px + env(safe-area-inset-bottom));padding:7px 8px env(safe-area-inset-bottom)}
+      .sidebar nav{height:79px}.sidebar .nav-item{font-size:12px;padding:8px 2px}
+      .sidebar .nav-item span{font-size:25px;margin-bottom:4px}
+      .sidebar .nav-item:nth-child(3){margin:-20px 5px 7px;font-size:12px}
+      .sidebar .nav-item:nth-child(3) span{font-size:30px}
+      .topbar h1{font-size:23px}.page{padding:20px 14px 42px}
+      .toolbar h2{font-size:21px}.toolbar p,.card-heading p{font-size:14px;line-height:1.5}
+      .kpi{padding:18px}.kpi p{font-size:14px}.kpi strong{font-size:28px}.kpi small{font-size:13px}
+      .card{padding:18px}.card h3{font-size:17px}.category-row{grid-template-columns:minmax(94px,1fr) minmax(70px,1fr) 74px;font-size:13px}.category-row strong{font-size:13px}
+      .recent b,.recent strong{font-size:14px}.recent small{font-size:12px}
+    }
+  </style>
+</head>
+<body>
+  <div id="splash" class="splash" aria-hidden="true"><div class="splash-content"><img src="daisho-logo.png" alt="DAISYO"><strong>大商</strong><span>売上管理システム</span><i></i></div></div>
+  <aside class="sidebar">
+    <div class="brand"><img src="daisho-logo.png" alt="DAISYO" /><span class="brand-name">大商<small>売上管理システム</small></span></div>
+    <nav aria-label="メインメニュー">
+      <button class="nav-item active" data-page="dashboard"><span>▦</span> ダッシュボード</button>
+      <button class="nav-item" data-page="sales"><span>▤</span> 売上一覧</button>
+      <button class="nav-item" data-page="entry"><span>＋</span> 売上を登録</button>
+      <button class="nav-item" data-page="master"><span>⚙</span> マスタ管理</button>
+    </nav>
+    <div class="sidebar-foot">2025年度 売上管理<br><small>デモ版・端末内保存</small></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div><p class="eyebrow">売上管理システム</p><h1 id="page-title">ダッシュボード</h1></div>
+      <div class="header-actions"><span id="today"></span><button class="primary" data-page="entry">＋ 売上を登録</button></div>
+    </header>
+
+    <section id="dashboard" class="page active">
+      <div class="toolbar"><div><h2 id="term-heading">第11期 概況</h2><p>期首：6月1日 ／ 期末：翌年5月31日</p></div><div class="toolbar-selects"><select id="dashboard-owner" aria-label="担当者を選択"></select><select id="dashboard-term" aria-label="期を選択"></select><select id="dashboard-month" aria-label="月を選択"><option value="all">年間</option></select><button id="export-report" class="report-button">▣ 報告書を出力</button></div></div>
+      <div class="kpis">
+        <article class="kpi accent"><p>売上高</p><strong id="total-sales">¥0</strong><small id="sales-count">0件の案件</small></article>
+        <article class="kpi"><p>総人工</p><strong id="total-labor">0</strong><small>人日</small></article>
+        <article class="kpi"><p>一人工当たり</p><strong id="per-labor">¥0</strong><small>売上 ÷ 総人工</small></article>
+        <article class="kpi"><p>今月の売上</p><strong id="month-sales">¥0</strong><small id="month-name">6月</small></article>
+      </div>
+      <div class="dashboard-grid">
+        <article class="card chart-card"><div class="card-heading"><div><h3>月別売上推移</h3><p>売上高（円）</p></div><span class="badge">年度</span></div><div id="bar-chart" class="bar-chart" aria-label="月別売上グラフ"></div></article>
+        <article class="card"><div class="card-heading"><div><h3>業種別 売上構成</h3><p>上位区分を可視化</p></div></div><div id="category-chart" class="category-chart"></div></article>
+        <article class="card"><div class="card-heading"><div><h3>元請別 売上内訳</h3></div></div><div id="prime-dashboard-list" class="category-chart"></div></article>
+        <article class="card recent-card"><div class="card-heading"><div><h3>最近登録した案件</h3><p>直近5件</p></div><button class="text-button" data-page="sales">すべて見る →</button></div><div id="recent-list"></div></article>
+        <article class="card alert-card"><h3>運用メモ</h3><p>まずは現場ごとの売上を登録し、月別・業種別・担当別に確認できる状態を作ります。</p><ul><li>案件を一行ずつ登録</li><li>月別集計は自動更新</li><li>CSV出力で既存運用へも戻せます</li></ul></article>
+      </div>
+    </section>
+
+    <section id="sales" class="page">
+      <div class="toolbar"><div><h2>売上一覧</h2><p>案件別の売上・人工・担当を確認できます。</p></div><button class="primary" data-page="entry">＋ 売上を登録</button></div>
+      <div class="filters card"><input id="search" placeholder="現場名・元請・担当者で検索" /><select id="filter-term" aria-label="期を選択"></select><select id="filter-month"><option value="all">すべての月</option></select><select id="filter-category"><option value="all">すべての業種</option></select><select id="filter-prime"><option value="all">すべての元請</option></select><button id="export-csv" class="secondary">CSV出力</button></div>
+      <div class="table-card"><div class="table-scroll"><table><thead><tr><th>計上月</th><th>現場名</th><th>元請</th><th>業種</th><th>担当</th><th class="number">売上</th><th class="number">人工</th><th class="number">一人工当たり</th><th></th></tr></thead><tbody id="sales-table"></tbody></table></div><p id="table-count" class="table-footer"></p></div>
+    </section>
+
+    <section id="entry" class="page">
+      <div class="toolbar"><div><h2>売上を登録</h2><p>登録するとダッシュボードと一覧にすぐ反映されます。</p></div></div>
+      <form id="sales-form" class="entry-layout">
+        <article class="card form-card"><h3>案件情報</h3><div class="form-grid"><label>期 <select name="term" id="entry-term" required></select></label><label>計上月 <select name="month" id="entry-month" required></select></label><label>業種 <select name="category" id="entry-category" required></select></label><label>担当 <select name="owner" id="entry-owner" required></select></label><label class="span-2">現場名 <input name="project" placeholder="例：〇〇工場 改修工事" required /></label><label class="span-2">元請 <select name="prime" id="entry-prime" required></select></label><label id="prime-other-wrap" class="span-2" hidden>元請名 <input name="primeOther" id="prime-other" placeholder="元請名を入力してください" /></label></div></article>
+        <article class="card form-card"><h3>金額・人工</h3><div class="form-grid"><label>売上金額（円）<input name="amount" type="number" min="0" step="1000" placeholder="例：1200000" required /></label><label>人工（人日）<input name="labor" type="number" min="0" step="0.5" placeholder="例：12" required /></label><label class="span-2">備考 <textarea name="note" rows="4" placeholder="任意：工事内容や特記事項"></textarea></label></div><div class="form-actions"><button type="reset" class="secondary">クリア</button><button class="primary" type="submit">登録する</button></div></article>
+      </form>
+    </section>
+    <section id="master" class="page"><div class="toolbar"><div><h2>マスタ管理</h2><p>入力画面に表示する担当者・元請を追加できます。</p></div></div><div class="dashboard-grid"><article class="card"><div class="card-heading"><div><h3>担当者</h3><p>追加後すぐにプルダウンへ反映</p></div></div><form id="owner-master-form" class="master-form"><input id="owner-master-input" placeholder="担当者名を入力" required><button class="primary">追加</button></form><div id="owner-master-list" class="master-list"></div></article><article class="card"><div class="card-heading"><div><h3>元請</h3><p>追加後すぐに元請プルダウンへ反映</p></div></div><form id="prime-master-form" class="master-form"><input id="prime-master-input" placeholder="元請名を入力" required><button class="primary">追加</button></form><div id="prime-master-list" class="master-list"></div></article></div></section>
+  </main>
+  <div id="completion-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="completion-title" hidden>
+    <div class="modal-panel">
+      <div class="celebrate-mark">✓</div>
+      <p class="eyebrow">売上を登録しました</p>
+      <h2 id="completion-title">お疲れ様でした！</h2>
+      <p id="completion-message" class="completion-message"></p>
+      <p id="goal-message" class="goal-message"></p>
+      <div class="completion-totals"><div><span id="owner-month-label">今月の売上合計</span><strong id="owner-month-total">¥0</strong></div><div><span id="owner-term-label">第11期 売上合計</span><strong id="owner-term-total">¥0</strong></div></div>
+      <button id="completion-close" class="primary">ダッシュボードを見る</button>
+    </div>
+  </div>
+  <div id="report-modal" class="report-modal" hidden>
+    <div class="report-modal-header"><strong>第11期 売上報告書プレビュー</strong><div><span id="report-save-status" class="report-save-status"></span><button id="report-print" class="primary">PDF保存</button><button id="report-close" class="secondary">閉じる</button></div></div>
+    <iframe id="report-frame" title="売上報告書プレビュー"></iframe>
+  </div>
+  <div id="toast" role="status"></div>
+  <script src="app.js"></script>
+  <script src="remote.js"></script>
+</body>
+</html>
