@@ -13,6 +13,7 @@
     if (!response.ok || result.error) throw new Error(result.error || '通信に失敗しました。');
     return result;
   };
+  let saleSaving = false;
 
   function resetSelects() {
     document.querySelector('#dashboard-month').innerHTML = '<option value="all">年間</option>';
@@ -43,6 +44,13 @@
     if (event.target.id !== 'sales-form') return;
     event.preventDefault();
     event.stopImmediatePropagation();
+    // 通信中の二度押し・Enter連打による重複登録を防ぐ。
+    if (saleSaving) return;
+    saleSaving = true;
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    const originalLabel = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = '登録中…';
     const data = Object.fromEntries(new FormData(event.target));
     if (data.prime === 'その他') data.prime = data.primeOther;
     delete data.primeOther;
@@ -59,6 +67,10 @@
       showCompletion(sale);
     } catch (error) {
       toast(`保存に失敗しました：${error.message}`);
+    } finally {
+      saleSaving = false;
+      submitButton.disabled = false;
+      submitButton.textContent = originalLabel;
     }
   }, true);
 
