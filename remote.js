@@ -3,17 +3,73 @@
   const remote = location.protocol === 'https:' && !location.hostname.includes('script.google');
   if (!remote) return;
 
-  const api = async (path, body) => {
-    const response = await fetch(`/api/${path}`, {
+  const BOOTSTRAP_CACHE_KEY = 'daisho-remote-bootstrap-cache-v1';
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  const hideSplash = () => {
+    document.querySelector('#splash')?.classList.add('done');
+  };
+
+  const api = async (path, body, options = {}) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), options.timeout || 15000);
+    let response;
+    try {
+      response = await fetch(`/api/${path}`, {
       method: body ? 'POST' : 'GET',
       headers: body ? {'Content-Type':'application/json'} : undefined,
-      body: body ? JSON.stringify(body) : undefined
-    });
+      body: body ? JSON.stringify(body) : undefined,
+      cache: body ? 'no-store' : 'no-store',
+      signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
     const result = await response.json();
     if (!response.ok || result.error) throw new Error(result.error || '通信に失敗しました。');
     return result;
   };
+
+  const getBootstrapWithRetry = async () => {
+    let lastError;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        return await api('bootstrap', null, {timeout: attempt === 1 ? 10000 : 16000});
+      } catch (error) {
+        lastError = error;
+        if (attempt < 3) await sleep(attempt * 900);
+      }
+    }
+    throw lastError;
+  };
+
+  const currentSelectValues = () => Object.fromEntries(
+    ['#dashboard-owner','#dashboard-term','#dashboard-month','#filter-term','#filter-month','#filter-category','#filter-prime','#entry-term','#entry-month','#entry-category','#entry-owner','#entry-prime']
+      .map(selector => [selector, document.querySelector(selector)?.value])
+  );
+
+  const restoreSelectValues = values => {
+    Object.entries(values).forEach(([selector, value]) => {
+      const select = document.querySelector(selector);
+      if (select && value && [...select.options].some(option => option.value === value)) select.value = value;
+    });
+  };
+
+  const applyBootstrapData = (data, options = {}) => {
+    const values = options.preserveControls ? currentSelectValues() : null;
+    OWNERS = data.owners || [];
+    PRIMES = data.primes || [];
+    sales = data.sales || [];
+    resetSelects();
+    fillSelects();
+    if (values) restoreSelectValues(values);
+    renderDashboard();
+    renderTable();
+  };
+
   let saleSaving = false;
+  let refreshRunning = false;
+  let lastBootstrapAt = 0;
 
   function resetSelects() {
     document.querySelector('#dashboard-month').innerHTML = '<option value="all">年間</option>';
@@ -27,16 +83,40 @@
 
   async function boot() {
     try {
-      const data = await api('bootstrap');
-      OWNERS = data.owners || [];
-      PRIMES = data.primes || [];
-      sales = data.sales || [];
-      resetSelects();
-      fillSelects();
-      renderDashboard();
-      renderTable();
+      const data = await getBootstrapWithRetry();
+      applyBootstrapData(data);
+      lastBootstrapAt = Date.now();
+      localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({savedAt: Date.now(), data}));
     } catch (error) {
-      toast(`データを読み込めませんでした：${error.message}`);
+      const cached = localStorage.getItem(BOOTSTRAP_CACHE_KEY);
+      if (cached) {
+        try {
+          applyBootstrapData(JSON.parse(cached).data);
+          toast('通信が不安定です。前回読み込めたデータを表示しています。');
+        } catch {
+          toast(`データを読み込めませんでした：${error.message}`);
+        }
+      } else {
+        toast(`データを読み込めませんでした。電波を確認して再読み込みしてください。`);
+      }
+    } finally {
+      setTimeout(hideSplash, 300);
+    }
+  }
+
+  async function refreshLatestData() {
+    if (refreshRunning || saleSaving) return;
+    if (Date.now() - lastBootstrapAt < 30000) return;
+    refreshRunning = true;
+    try {
+      const data = await getBootstrapWithRetry();
+      applyBootstrapData(data, {preserveControls:true});
+      lastBootstrapAt = Date.now();
+      localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({savedAt: Date.now(), data}));
+    } catch (error) {
+      console.warn('refresh failed', error);
+    } finally {
+      refreshRunning = false;
     }
   }
 
@@ -62,7 +142,7 @@
       event.target.reset();
       document.querySelector('#prime-other-wrap').hidden = true;
       document.querySelector('#entry-term').value = CURRENT_TERM;
-      document.querySelector('#entry-month').value = '6月';
+      document.querySelector('#entry-month').value = MONTHS.includes(CURRENT_MONTH_LABEL) ? CURRENT_MONTH_LABEL : '6月';
       renderDashboard();
       showCompletion(sale);
     } catch (error) {
@@ -111,4 +191,12 @@
   }, true);
 
   boot();
+  window.addEventListener('focus', refreshLatestData);
+  window.addEventListener('pageshow', refreshLatestData);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshLatestData();
+  });
+  setInterval(() => {
+    if (document.visibilityState === 'visible') refreshLatestData();
+  }, 120000);
 })();
