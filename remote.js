@@ -68,6 +68,7 @@
   };
 
   let saleSaving = false;
+  let deleteRunning = false;
   let refreshRunning = false;
   let lastBootstrapAt = 0;
 
@@ -115,6 +116,21 @@
       localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({savedAt: Date.now(), data}));
     } catch (error) {
       console.warn('refresh failed', error);
+    } finally {
+      refreshRunning = false;
+    }
+  }
+
+  async function forceRefreshLatestData() {
+    if (refreshRunning) return;
+    refreshRunning = true;
+    try {
+      const data = await getBootstrapWithRetry();
+      applyBootstrapData(data, {preserveControls:true});
+      lastBootstrapAt = Date.now();
+      localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({savedAt: Date.now(), data}));
+    } catch (error) {
+      console.warn('force refresh failed', error);
     } finally {
       refreshRunning = false;
     }
@@ -176,17 +192,33 @@
   }, true);
 
   document.addEventListener('click', async event => {
-    const id = event.target.closest('[data-delete]')?.dataset.delete;
+    const deleteButton = event.target.closest('[data-delete]');
+    const id = deleteButton?.dataset.delete;
     if (!id) return;
     event.preventDefault();
     event.stopImmediatePropagation();
+    if (deleteRunning) return;
     if (!confirm('この売上データを削除しますか？')) return;
+    deleteRunning = true;
+    const originalLabel = deleteButton.textContent;
+    deleteButton.disabled = true;
+    deleteButton.textContent = '削除中';
+    const row = deleteButton.closest('tr');
+    if (row) row.style.opacity = '.45';
     try {
       await api('sales', {action:'deleteSale', id});
       sales = sales.filter(sale => sale.id !== id);
-      renderTable(); renderDashboard(); toast('削除しました。');
+      renderTable();
+      renderDashboard();
+      toast('削除しました。一覧を更新しています。');
+      await forceRefreshLatestData();
     } catch (error) {
       toast(`削除に失敗しました：${error.message}`);
+      if (row) row.style.opacity = '';
+      deleteButton.disabled = false;
+      deleteButton.textContent = originalLabel;
+    } finally {
+      deleteRunning = false;
     }
   }, true);
 
