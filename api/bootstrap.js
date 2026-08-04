@@ -1,6 +1,7 @@
 const GAS_URL = process.env.GAS_WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbwyO9fNzTO5YW5sn6r0SbDPlwj5ytCNMft-zmsuqcoV-DySqUiqMnJrYpp5g4zY6-bc1Q/exec';
 
 export default async function handler(request, response) {
+  response.setHeader('Cache-Control', 'no-store, max-age=0');
   try {
     const upstream = await fetch(`${GAS_URL}?api=bootstrap`, {
       redirect:'follow',
