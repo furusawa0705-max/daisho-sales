@@ -90,7 +90,7 @@
 
     <section id="sales" class="page">
       <div class="toolbar"><div><h2>売上一覧</h2><p>案件別の売上・人工・担当を確認できます。</p></div><button class="primary" data-page="entry">＋ 売上を登録</button></div>
-      <div class="filters card"><input id="search" placeholder="現場名・元請・担当者で検索" /><select id="filter-term" aria-label="期を選択"></select><select id="filter-month"><option value="all">すべての月</option></select><select id="filter-category"><option value="all">すべての業種</option></select><select id="filter-prime"><option value="all">すべての元請</option></select><button id="export-csv" class="secondary">CSV出力</button></div>
+      <div class="filters card"><input id="search" placeholder="現場名・元請・担当者で検索" /><select id="filter-term" aria-label="期を選択"></select><select id="filter-month"><option value="all">すべての月</option></select><select id="filter-owner"><option value="all">すべての担当者</option></select><select id="filter-category"><option value="all">すべての業種</option></select><select id="filter-prime"><option value="all">すべての元請</option></select><button id="export-csv" class="secondary">CSV出力</button></div>
       <div class="table-card"><div class="table-scroll"><table><thead><tr><th>計上月</th><th>現場名</th><th>元請</th><th>業種</th><th>担当</th><th class="number">売上</th><th class="number">人工</th><th class="number">一人工当たり</th><th></th></tr></thead><tbody id="sales-table"></tbody></table></div><p id="table-count" class="table-footer"></p></div>
     </section>
 
