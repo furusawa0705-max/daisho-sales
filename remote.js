@@ -44,7 +44,7 @@
   };
 
   const currentSelectValues = () => Object.fromEntries(
-    ['#dashboard-owner','#dashboard-term','#dashboard-month','#filter-term','#filter-month','#filter-category','#filter-prime','#entry-term','#entry-month','#entry-category','#entry-owner','#entry-prime']
+    ['#dashboard-owner','#dashboard-term','#dashboard-month','#filter-term','#filter-month','#filter-owner','#filter-category','#filter-prime','#entry-term','#entry-month','#entry-category','#entry-owner','#entry-prime']
       .map(selector => [selector, document.querySelector(selector)?.value])
   );
 
@@ -75,6 +75,7 @@
   function resetSelects() {
     document.querySelector('#dashboard-month').innerHTML = '<option value="all">年間</option>';
     document.querySelector('#filter-month').innerHTML = '<option value="all">すべての月</option>';
+    document.querySelector('#filter-owner').innerHTML = '<option value="all">すべての担当者</option>';
     document.querySelector('#filter-category').innerHTML = '<option value="all">すべての業種</option>';
     document.querySelector('#filter-prime').innerHTML = '<option value="all">すべての元請</option>';
     ['#dashboard-term','#filter-term','#entry-term','#dashboard-owner','#entry-owner','#entry-category','#entry-prime'].forEach(selector => {
